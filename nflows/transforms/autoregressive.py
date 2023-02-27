@@ -416,6 +416,7 @@ class MaskedPiecewiseRationalQuadraticAutoregressiveTransform(AutoregressiveTran
         activation=F.relu,
         dropout_probability=0.0,
         use_batch_norm=False,
+        init_identity=True,
         min_bin_width=rational_quadratic.DEFAULT_MIN_BIN_WIDTH,
         min_bin_height=rational_quadratic.DEFAULT_MIN_BIN_HEIGHT,
         min_derivative=rational_quadratic.DEFAULT_MIN_DERIVATIVE,
@@ -439,6 +440,13 @@ class MaskedPiecewiseRationalQuadraticAutoregressiveTransform(AutoregressiveTran
             dropout_probability=dropout_probability,
             use_batch_norm=use_batch_norm,
         )
+
+        if init_identity:
+            torch.nn.init.constant_(autoregressive_net.final_layer.weight, 0.0)
+            torch.nn.init.constant_(
+                autoregressive_net.final_layer.bias,
+                np.log(np.exp(1 - min_derivative) - 1),
+            )
 
         super().__init__(autoregressive_net)
 

@@ -22,7 +22,7 @@ class CouplingTransform(Transform):
     images (NxCxHxW). For images the splitting is done on the channel dimension, using the
     provided 1D mask."""
 
-    def __init__(self, mask, transform_net_create_fn, unconditional_transform=None):
+    def __init__(self, mask, transform_net_create_fn, unconditional_transform=None, init_identity=True):
         """
         Constructor.
 
@@ -54,6 +54,13 @@ class CouplingTransform(Transform):
             self.num_identity_features,
             self.num_transform_features * self._transform_dim_multiplier(),
         )
+
+        if init_identity:
+            torch.nn.init.constant_(self.transform_net.final_layer.weight, 0.0)
+            torch.nn.init.constant_(
+                self.transform_net.final_layer.bias,
+                np.log(np.exp(1 - self.min_derivative) - 1),
+            )
 
         if unconditional_transform is None:
             self.unconditional_transform = None
